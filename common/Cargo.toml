@@ -1,0 +1,14 @@
+[package]
+edition = "2021"
+name = "common"
+version = "0.1.0"
+
+[dependencies]
+cadence = {workspace = true}
+cadence-macros = {workspace = true}
+env_logger = {workspace = true} 
+git2 = {workspace = true} 
+figment = {workspace = true}
+serde = {workspace = true}
+sea-orm = { workspace = true }
+sqlx =  {workspace = true}

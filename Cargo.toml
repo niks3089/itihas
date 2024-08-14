@@ -1,0 +1,109 @@
+[workspace]
+members = [
+  "api",
+  "common",
+  "dao",
+  "indexer",
+  "migration",
+  "tests"
+]
+
+resolver = "2"
+
+[workspace.dependencies]
+async-std = {version = "^1", features = ["attributes", "tokio1"]}
+async-stream = "0.3.5"
+async-trait = "0.1.57"
+anyhow = "1.0.86"
+api = { path = "api" }
+base64 = "0.21.0"
+borsh = "0.10.3"
+borsh-derive = { version = "0.9.3" }
+bs58 = "0.5.1"
+cadence = "1.4.0"
+cadence-macros = "1.4.0"
+chrono = "0.4.31"
+common = {path = "common"}
+dao = {path = "dao", features = [
+  "json_types",
+  "sql_types",
+]}
+enum-iterator = "2.1.0"
+enum-iterator-derive = "1.1.0"
+env_logger = "0.11.5"
+figment = {version = "0.10.9", features = ["env", "test", "json"]}
+flatbuffers = "23.1.21"
+function_name = "0.3.0"
+futures-util = "0.3.27"
+futures = "0.3.30"
+git2 = "0.19.0"
+hex = "0.4.3"
+hyper = "1.4.1"
+http = "0.2.8"
+indexer = {path = "indexer"}
+indexmap = "2.3.0"
+itertools = "0.13.0"
+insta = { version = "1.34.0", features = ["json"] }
+migration = { path = "migration" }
+mime_guess = "2.0.4"
+num-derive = "0.4.2"
+num-traits = "0.2.15"
+once_cell = "1.19.0"
+jsonpath_lib = "0.3.0"
+jsonrpsee = {version = "0.16.2", features = ["server", "macros"]}
+jsonrpsee-core = {version = "0.16.2", features = ["server"]}
+log = "0.4.22"
+metrics = "0.23.0"
+mockall = "0.12.1"
+open-rpc-derive = {version = "0.0.4"}
+open-rpc-schema = {version = "0.0.4"}
+reqwest = { version = "0.11.13", features = ["json"] }
+rstest = "0.18.2"
+schemars = { version = "0.8.6", features = ["chrono"] }
+schemars_derive = "0.8.6"
+sea-orm = { version = "0.10.6", features = [
+  "macros",
+  "runtime-tokio-rustls",
+  "sqlx-postgres",
+  "sqlx-sqlite",
+  "with-chrono",
+  "mock",
+] }
+sea-orm-migration = { version = "0.10.6", features = [
+  "runtime-tokio-rustls",
+  "sqlx-postgres",
+] }
+sea-query = { version = "0.30.7", features = ["postgres-array"] }
+serial_test = "2.0.0"
+serde = "1.0.204"
+serde_json = { version = "1.0.81", features = ["preserve_order"] }
+spl-token = { version = "4.0", features = ["no-entrypoint"] }
+spl-token-2022 = { version = "1.0", features = ["no-entrypoint"] }
+solana-account-decoder = "=1.17"
+solana-client = "=1.17"
+solana-program = "=1.17"
+solana-sdk = "=1.17"
+solana-transaction-status = "=1.17"
+sqlx = { version = "0.6.2", features = [
+  "macros",
+  "runtime-tokio-rustls",
+  "postgres",
+  "sqlite",
+  "uuid",
+  "offline",
+  "json",
+] }
+thiserror = "1.0.31"
+tower = {version = "0.4.13", features = ["full"]}
+tower-http = { version = "0.3.5", features = ["full"] }
+tracing-subscriber = {version = "0.3.18", features = [
+  "json",
+  "env-filter",
+  "ansi",
+]}
+tokio = {version = "1.23.0", features = ["full"]}
+tokio-postgres = "0.7.7"
+tokio-retry = "0.3.0"
+tokio-stream = {version = "0.1.14", features = ["io-util"]}
+tracing = "0.1.35"
+url = "2.3.1"
