@@ -108,7 +108,7 @@ impl Dao {
 
             let query = blocks::Entity::insert_many(block_models)
                 .on_conflict(
-                    OnConflict::column(blocks::Column::Slot)
+                    OnConflict::columns([blocks::Column::Slot, blocks::Column::BlockTime])
                         .do_nothing()
                         .to_owned(),
                 )

@@ -82,6 +82,8 @@ pub async fn setup(name: String, opts: TestSetupOptions) -> TestSetup {
     if !(local_db.contains("127.0.0.1") || local_db.contains("localhost")) {
         panic!("Refusing to run tests on non-local database out of caution");
     }
+    let api_database_config = format!("{{url=\"{}\"}}", local_db);
+    env::set_var("API_DATABASE_CONFIG", api_database_config);
 
     let pool = setup_pg_pool(local_db.to_string()).await;
     let db_conn = Arc::new(SqlxPostgresConnector::from_sqlx_postgres_pool(pool.clone()));

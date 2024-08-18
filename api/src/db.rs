@@ -79,11 +79,7 @@ impl Dao {
             .order_by_asc(token_transfers::Column::Signature);
 
         if let Some(dest_address) = destination {
-            let dest_address_bytes = bs58::decode(dest_address.clone())
-                .into_vec()
-                .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
-
-            query = query.filter(token_transfers::Column::DestAddress.eq(dest_address_bytes));
+            query = query.filter(token_transfers::Column::DestAddress.eq(dest_address));
         }
 
         let transactions = query
