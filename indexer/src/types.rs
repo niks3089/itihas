@@ -58,7 +58,7 @@ pub struct BlockMetadata {
 #[derive(Clone)]
 pub struct BlockStreamConfig {
     pub rpc_client: Arc<RpcClient>,
-    pub geyser_url: Option<String>,
+    pub grpc_url: Option<String>,
     pub max_concurrent_block_fetches: usize,
     pub last_indexed_slot: u64,
 }

@@ -14,6 +14,7 @@ pub fn safe_metric<F: Fn()>(f: F) {
 #[macro_export]
 macro_rules! metric {
     {$($block:stmt;)*} => {
+        use cadence_macros::is_global_default_set;
         if is_global_default_set() {
             $(
                 $block

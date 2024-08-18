@@ -11,6 +11,7 @@ pub struct IndexerConfig {
     pub max_connections: Option<u32>,
     pub account_stream_worker_count: Option<u32>,
     pub max_concurrent_block_fetches: Option<usize>,
+    pub grpc_url: Option<String>,
     #[serde(default = "default_start_slot")]
     pub start_slot: u64,
     #[serde(default = "default_workers")]

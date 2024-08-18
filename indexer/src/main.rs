@@ -8,9 +8,10 @@ use indexer::{
     config::setup_config,
     db::Dao,
     error::IndexerError,
+    grpc::GrpcStreamer,
     messenger,
-    poller::{continously_index_new_blocks, PollerStreamer},
-    streamer::fetch_block_parent_slot,
+    poller::PollerStreamer,
+    streamer::{continously_index_new_blocks, fetch_block_parent_slot, Streamer},
     types::BlockStreamConfig,
 };
 
@@ -19,7 +20,6 @@ pub mod error;
 #[tokio::main(flavor = "multi_thread")]
 pub async fn main() -> Result<(), IndexerError> {
     init_logger();
-    info!("Starting indexer");
 
     let config = setup_config();
     let dao = Dao::new(setup_database_connection(config.get_database_url(), 10).await);
@@ -57,29 +57,45 @@ pub async fn main() -> Result<(), IndexerError> {
         rpc_client: rpc_client.clone(),
         max_concurrent_block_fetches,
         last_indexed_slot,
-        geyser_url: None,
+        grpc_url: config.grpc_url.clone(),
     };
 
-    let poller_fetcher = PollerStreamer::new(block_stream_config);
+    let streamer: Box<dyn Streamer + Send + Sync + 'static> = if config.grpc_url.is_some() {
+        Box::new(GrpcStreamer::new(block_stream_config))
+            as Box<dyn Streamer + Send + Sync + 'static>
+    } else {
+        Box::new(PollerStreamer::new(block_stream_config))
+            as Box<dyn Streamer + Send + Sync + 'static>
+    };
 
     let indexer_handle = tokio::task::spawn(continously_index_new_blocks(
-        poller_fetcher,
+        streamer,
         messenger,
         rpc_client.clone(),
         last_indexed_slot,
     ));
+
     match tokio::signal::ctrl_c().await {
         Ok(()) => {
             info!("Shutting down indexer...");
             indexer_handle.abort();
-            indexer_handle
-                .await
-                .expect_err("Indexer should have been aborted");
+
+            // Wait for the task to finish, checking if it was indeed aborted.
+            match indexer_handle.await {
+                Ok(_) => {
+                    error!("Indexer task completed unexpectedly");
+                }
+                Err(err) if err.is_cancelled() => {
+                    info!("Indexer task was successfully aborted");
+                }
+                Err(err) => {
+                    error!("Unexpected error while waiting for indexer task: {:?}", err);
+                }
+            }
         }
         Err(err) => {
             error!("Unable to listen for shutdown signal: {}", err);
         }
     }
-
     Ok(())
 }

@@ -22,7 +22,6 @@ jsonrpsee = {workspace = true}
 jsonrpsee-core = {workspace = true}
 log = {workspace = true}
 mockall = {workspace = true}
-metrics = {workspace = true}
 open-rpc-derive = {workspace = true}
 open-rpc-schema = {workspace = true}
 schemars = {workspace = true}

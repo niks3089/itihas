@@ -1,8 +1,7 @@
-use std::{sync::Arc, thread::sleep, time::Duration};
+use std::{pin::Pin, sync::Arc, thread::sleep, time::Duration};
 
 use async_stream::stream;
-use futures::{pin_mut, stream::FuturesUnordered, Stream, StreamExt};
-use log::info;
+use futures::{stream::FuturesUnordered, Stream, StreamExt};
 use solana_client::{
     nonblocking::rpc_client::RpcClient, rpc_config::RpcBlockConfig, rpc_request::RpcError,
 };
@@ -11,24 +10,27 @@ use solana_transaction_status::{TransactionDetails, UiTransactionEncoding};
 
 use crate::{
     error::IndexerError,
-    messenger::Messenger,
     parser::parse_ui_confirmed_block,
     streamer::{fetch_current_slot, Streamer},
     types::{BlockInfo, BlockStreamConfig},
 };
 
-const POST_BACKFILL_FREQUENCY: u64 = 100;
-const PRE_BACKFILL_FREQUENCY: u64 = 10;
 const SKIPPED_BLOCK_ERRORS: [i64; 2] = [-32007, -32009];
 const FAILED_BLOCK_LOGGING_FREQUENCY: u64 = 100;
 
+#[derive(Clone)]
 pub struct PollerStreamer {
     config: BlockStreamConfig,
 }
 
 impl Streamer for PollerStreamer {
-    fn load_block_stream(&self, slot: u64) -> impl Stream<Item = BlockInfo> {
-        self.get_poller_block_stream(slot)
+    fn load_block_stream(&self, slot: u64) -> Pin<Box<dyn Stream<Item = BlockInfo> + Send + '_>> {
+        Box::pin(PollerStreamer::get_poller_block_stream(
+            self.config.rpc_client.clone(),
+            self.config.last_indexed_slot,
+            self.config.max_concurrent_block_fetches,
+            Some(slot),
+        ))
     }
 }
 
@@ -76,23 +78,20 @@ impl PollerStreamer {
         }
     }
 
-    fn get_poller_block_stream(&self, latest_slot: u64) -> impl futures::Stream<Item = BlockInfo> {
-        let client = self.config.rpc_client.clone();
-        let last_indexed_slot = self.config.last_indexed_slot;
-        let max_concurrent_block_fetches = self.config.max_concurrent_block_fetches;
-
+    pub fn get_poller_block_stream(
+        client: Arc<RpcClient>,
+        last_indexed_slot: u64,
+        max_concurrent_block_fetches: usize,
+        end_block_slot: Option<u64>,
+    ) -> impl futures::Stream<Item = BlockInfo> {
         stream! {
             let mut current_slot_to_fetch = match last_indexed_slot {
                 0 => 0,
                 last_indexed_slot => last_indexed_slot + 1
             };
 
-            if latest_slot != 0 {
-                current_slot_to_fetch = current_slot_to_fetch.max(latest_slot);
-            }
-            let polls_forever = true;
-            let mut end_block_slot = fetch_current_slot(client.as_ref()).await;
-
+            let polls_forever = end_block_slot.is_none();
+            let mut end_block_slot = end_block_slot.unwrap_or(fetch_current_slot(client.as_ref()).await);
             loop {
                 if current_slot_to_fetch > end_block_slot  && !polls_forever {
                     break;
@@ -135,58 +134,4 @@ impl PollerStreamer {
     ) -> Result<BlockInfo, IndexerError> {
         Self::get_block(client.as_ref(), slot).await
     }
-}
-
-pub async fn continously_index_new_blocks(
-    poller_fetcher: PollerStreamer,
-    messenger: Arc<Messenger>,
-    rpc_client: Arc<RpcClient>,
-    mut last_indexed_slot_at_start: u64,
-) -> tokio::task::JoinHandle<()> {
-    tokio::spawn(async move {
-        let current_slot = fetch_current_slot(rpc_client.as_ref()).await;
-        if last_indexed_slot_at_start == 0 {
-            last_indexed_slot_at_start = current_slot;
-        }
-        let block_stream = poller_fetcher.load_block_stream(last_indexed_slot_at_start);
-        pin_mut!(block_stream);
-
-        let number_of_blocks_to_backfill = current_slot - last_indexed_slot_at_start;
-        info!(
-            "Backfilling historical blocks. Current number of blocks to backfill: {}, Current slot: {}",
-            number_of_blocks_to_backfill, current_slot
-        );
-        let mut last_indexed_slot = last_indexed_slot_at_start;
-
-        let mut finished_backfill = true;
-
-        loop {
-            let block = block_stream.next().await.unwrap();
-            let slot_indexed = block.metadata.slot;
-            messenger.send_block_batches(vec![block]).await;
-
-            if !finished_backfill {
-                let blocks_indexed = slot_indexed - last_indexed_slot_at_start;
-                if blocks_indexed <= number_of_blocks_to_backfill {
-                    if blocks_indexed % PRE_BACKFILL_FREQUENCY == 0 {
-                        info!(
-                            "Backfilled {} / {} blocks",
-                            blocks_indexed, number_of_blocks_to_backfill
-                        );
-                    }
-                } else {
-                    finished_backfill = true;
-                    info!("Finished backfilling historical blocks!");
-                }
-            } else {
-                for slot in last_indexed_slot..slot_indexed {
-                    if slot % POST_BACKFILL_FREQUENCY == 0 {
-                        info!("Indexed slot {}", slot);
-                    }
-                }
-            }
-
-            last_indexed_slot = slot_indexed;
-        }
-    })
 }

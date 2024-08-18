@@ -1,18 +1,19 @@
-use std::{sync::Arc, thread::sleep, time::Duration};
+use std::{pin::Pin, sync::Arc, thread::sleep, time::Duration};
 
-use futures::Stream;
+use futures::{pin_mut, Stream};
+use log::info;
 use solana_client::{nonblocking::rpc_client::RpcClient, rpc_config::RpcBlockConfig};
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_transaction_status::{TransactionDetails, UiTransactionEncoding};
+use tokio_stream::StreamExt;
 
-use crate::types::BlockInfo;
+use crate::{messenger::Messenger, types::BlockInfo};
 
-pub trait Streamer {
-    fn load_block_stream(&self, latest_slot: u64) -> impl Stream<Item = BlockInfo>;
-    // fn get_block(
-    //     client: &RpcClient,
-    //     slot: u64,
-    // ) -> impl std::future::Future<Output = Option<BlockInfo>> + Send;
+const POST_BACKFILL_FREQUENCY: u64 = 100;
+const PRE_BACKFILL_FREQUENCY: u64 = 10;
+
+pub trait Streamer: Send {
+    fn load_block_stream(&self, slot: u64) -> Pin<Box<dyn Stream<Item = BlockInfo> + Send + '_>>;
 }
 
 pub async fn get_genesis_hash(rpc_client: &RpcClient) -> String {
@@ -54,4 +55,58 @@ pub async fn fetch_current_slot(client: &RpcClient) -> u64 {
             }
         }
     }
+}
+
+pub async fn continously_index_new_blocks(
+    streamer: Box<dyn Streamer + Send + Sync>,
+    messenger: Arc<Messenger>,
+    rpc_client: Arc<RpcClient>,
+    mut last_indexed_slot_at_start: u64,
+) -> tokio::task::JoinHandle<()> {
+    tokio::spawn(async move {
+        let current_slot = fetch_current_slot(rpc_client.as_ref()).await;
+        if last_indexed_slot_at_start == 0 {
+            last_indexed_slot_at_start = current_slot;
+        }
+        let block_stream = streamer.load_block_stream(last_indexed_slot_at_start);
+        pin_mut!(block_stream);
+
+        let number_of_blocks_to_backfill = current_slot - last_indexed_slot_at_start;
+        info!(
+            "Backfilling historical blocks. Current number of blocks to backfill: {}, Current slot: {}",
+            number_of_blocks_to_backfill, current_slot
+        );
+        let mut last_indexed_slot = last_indexed_slot_at_start;
+
+        let mut finished_backfill = true;
+
+        loop {
+            let block = block_stream.next().await.unwrap();
+            let slot_indexed = block.metadata.slot;
+            messenger.send_block_batches(vec![block]).await;
+
+            if !finished_backfill {
+                let blocks_indexed = slot_indexed - last_indexed_slot_at_start;
+                if blocks_indexed <= number_of_blocks_to_backfill {
+                    if blocks_indexed % PRE_BACKFILL_FREQUENCY == 0 {
+                        info!(
+                            "Backfilled {} / {} blocks",
+                            blocks_indexed, number_of_blocks_to_backfill
+                        );
+                    }
+                } else {
+                    finished_backfill = true;
+                    info!("Finished backfilling historical blocks!");
+                }
+            } else {
+                for slot in last_indexed_slot..slot_indexed {
+                    if slot % POST_BACKFILL_FREQUENCY == 0 {
+                        info!("Indexed slot {}", slot);
+                    }
+                }
+            }
+
+            last_indexed_slot = slot_indexed;
+        }
+    })
 }

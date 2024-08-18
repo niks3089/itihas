@@ -1,6 +1,7 @@
 pub mod config;
 pub mod db;
 pub mod error;
+pub mod grpc;
 pub mod messenger;
 pub mod parser;
 pub mod poller;

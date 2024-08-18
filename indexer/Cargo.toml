@@ -10,6 +10,8 @@ async-std = { workspace = true }
 async-stream = { workspace = true }
 borsh = {workspace = true}
 borsh-derive = {workspace = true}
+cadence = {workspace = true}
+cadence-macros = {workspace = true}
 chrono = {workspace = true}
 common = { workspace = true }
 dao = { workspace = true }
@@ -17,6 +19,7 @@ figment = { workspace = true }
 futures = { workspace = true }
 log = { workspace = true } 
 itertools = { workspace = true }
+rand = { workspace = true }
 spl-token = { workspace = true }
 spl-token-2022 = { workspace = true }
 solana-client = { workspace = true }
@@ -32,3 +35,5 @@ tokio-stream = { workspace = true }
 tokio-retry = { workspace = true }
 thiserror = { workspace = true }
 tracing-subscriber = { workspace = true }
+yellowstone-grpc-client = { workspace = true }
+yellowstone-grpc-proto = { workspace = true }
