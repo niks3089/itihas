@@ -405,8 +405,8 @@ impl GrpcStreamer {
             })
             .filter_map(|result| match result {
                 Ok(Some(transaction)) => Some(Ok(transaction)),
-                Ok(None) => None,       // Filter out None values
-                Err(e) => Some(Err(e)), // Propagate the error
+                Ok(None) => None,
+                Err(e) => Some(Err(e)),
             })
             .collect();
 

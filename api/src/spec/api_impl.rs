@@ -1,18 +1,16 @@
-use std::str::FromStr;
-
-use crate::{api::Api, error::ApiError, types::Transaction};
+use crate::{
+    api::{validate_pubkey, Api},
+    db::create_sorting,
+    error::ApiError,
+    types::Transaction,
+};
 use open_rpc_derive::document_rpc;
 use open_rpc_schema::document::OpenrpcDocument;
 use sea_orm::{ConnectionTrait, DbBackend, Statement};
-use solana_sdk::pubkey::Pubkey;
 
-use super::{ApiContract, GetTransactionsByAddress, GetTransactionsByMint};
+use super::{ApiContract, GetTransactionsByAddress, GetTransactionsByMint, TransactionList};
 
 use async_trait::async_trait;
-
-pub fn validate_pubkey(str_pubkey: String) -> Result<Pubkey, ApiError> {
-    Pubkey::from_str(&str_pubkey).map_err(|_| ApiError::PubkeyValidationError(str_pubkey))
-}
 
 #[document_rpc]
 #[async_trait]
@@ -38,11 +36,16 @@ impl ApiContract for Api {
     async fn get_transactions_by_address(
         self: &Api,
         payload: GetTransactionsByAddress,
-    ) -> Result<Vec<Transaction>, ApiError> {
+    ) -> Result<TransactionList, ApiError> {
         let GetTransactionsByAddress {
             source,
             destination,
             mint,
+            before,
+            after,
+            limit,
+            page,
+            sort_by,
         } = payload;
 
         let source = validate_pubkey(source)?.to_bytes().to_vec();
@@ -58,24 +61,57 @@ impl ApiContract for Api {
             None
         };
 
+        let page = self.validate_pagination(&limit, &page, &before, &after)?;
+        let pagination = self.create_pagination(page.clone())?;
+        let (sort_direction, sort_column) = create_sorting(sort_by.unwrap_or_default());
+
         let models = self
             .dao
-            .get_transactions_by_address(source, destination, mint)
+            .get_transactions_by_address(
+                source,
+                destination,
+                mint,
+                &pagination,
+                page.limit,
+                sort_direction,
+                sort_column,
+            )
             .await?;
         let transactions: Vec<Transaction> = models.into_iter().map(Transaction::from).collect();
-        Ok(transactions)
+        Ok(Api::build_transaction_response(
+            transactions,
+            page.limit,
+            &pagination,
+        ))
     }
 
     async fn get_transactions_by_mint(
         self: &Api,
         payload: GetTransactionsByMint,
-    ) -> Result<Vec<Transaction>, ApiError> {
-        let GetTransactionsByMint { mint } = payload;
+    ) -> Result<TransactionList, ApiError> {
+        let GetTransactionsByMint {
+            mint,
+            before,
+            after,
+            page,
+            limit,
+            sort_by,
+        } = payload;
 
         let mint = validate_pubkey(mint)?.to_bytes().to_vec();
+        let page = self.validate_pagination(&limit, &page, &before, &after)?;
+        let pagination = self.create_pagination(page.clone())?;
+        let (sort_direction, sort_column) = create_sorting(sort_by.unwrap_or_default());
 
-        let models = self.dao.get_transactions_by_mint(mint).await?;
+        let models = self
+            .dao
+            .get_transactions_by_mint(mint, &pagination, page.limit, sort_direction, sort_column)
+            .await?;
         let transactions: Vec<Transaction> = models.into_iter().map(Transaction::from).collect();
-        Ok(transactions)
+        Ok(Api::build_transaction_response(
+            transactions,
+            page.limit,
+            &pagination,
+        ))
     }
 }

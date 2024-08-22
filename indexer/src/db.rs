@@ -32,6 +32,10 @@ impl Dao {
         Dao { db: Arc::new(db) }
     }
 
+    fn get_db(&self) -> &DatabaseConnection {
+        &self.db
+    }
+
     pub async fn index_block(&self, block: &BlockInfo) -> Result<(), IndexerError> {
         let txn = self.db.begin().await?;
         self.index_block_metadatas_without_commit(&txn, vec![&block.metadata])
@@ -198,7 +202,7 @@ impl Dao {
                 .select_only()
                 .column_as(Expr::col(blocks::Column::Slot).max(), "slot")
                 .into_model::<SlotModel>()
-                .one(&*self.db)
+                .one(self.get_db())
                 .await;
 
             match context {
