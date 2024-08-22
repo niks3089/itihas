@@ -153,17 +153,20 @@ impl Dao {
                             error: Set(transaction.error.clone()),
                             block_time: Set(datetime_utc.into()),
                             created_at: Set(chrono::Utc::now().naive_utc()),
-                            src_address: Set(instruction_group
+                            source_address: Set(instruction_group
                                 .outer_instruction
-                                .src_address
+                                .source_address
                                 .clone()),
-                            dest_address: Set(instruction_group
+                            destination_address: Set(instruction_group
                                 .outer_instruction
-                                .dest_address
+                                .destination_address
                                 .clone()),
                             mint_address: Set(instruction_group.outer_instruction.mint.clone()),
-                            src_ata: Set(instruction_group.outer_instruction.src_ata.clone()),
-                            dest_ata: Set(instruction_group.outer_instruction.dest_ata.clone()),
+                            source_ata: Set(instruction_group.outer_instruction.source_ata.clone()),
+                            destination_ata: Set(instruction_group
+                                .outer_instruction
+                                .destination_ata
+                                .clone()),
                             amount: Set(instruction_group.outer_instruction.amount as i64),
                             token_type: Set(instruction_group.token_type.clone()),
                         }
@@ -177,8 +180,8 @@ impl Dao {
                     OnConflict::columns([
                         token_transfers::Column::Signature,
                         token_transfers::Column::BlockTime,
-                        token_transfers::Column::SrcAddress,
-                        token_transfers::Column::DestAddress,
+                        token_transfers::Column::SourceAddress,
+                        token_transfers::Column::DestinationAddress,
                     ])
                     .do_nothing()
                     .to_owned(),

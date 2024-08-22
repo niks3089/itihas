@@ -72,15 +72,37 @@ impl Dao {
         &self,
         source: Vec<u8>,
         destination: Option<Vec<u8>>,
+        mint: Option<Vec<u8>>,
     ) -> Result<Vec<token_transfers::Model>, ApiError> {
         let mut query = token_transfers::Entity::find()
-            .filter(token_transfers::Column::SrcAddress.eq(source.clone()))
+            .filter(token_transfers::Column::SourceAddress.eq(source.clone()))
             .order_by_asc(token_transfers::Column::BlockTime)
             .order_by_asc(token_transfers::Column::Signature);
 
         if let Some(dest_address) = destination {
-            query = query.filter(token_transfers::Column::DestAddress.eq(dest_address));
+            query = query.filter(token_transfers::Column::DestinationAddress.eq(dest_address));
         }
+
+        if let Some(mint_address) = mint {
+            query = query.filter(token_transfers::Column::MintAddress.eq(mint_address));
+        }
+
+        let transactions = query
+            .all(&*self.db)
+            .await
+            .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
+
+        Ok(transactions)
+    }
+
+    pub async fn get_transactions_by_mint(
+        &self,
+        mint: Vec<u8>,
+    ) -> Result<Vec<token_transfers::Model>, ApiError> {
+        let query = token_transfers::Entity::find()
+            .filter(token_transfers::Column::MintAddress.eq(mint.clone()))
+            .order_by_asc(token_transfers::Column::BlockTime)
+            .order_by_asc(token_transfers::Column::Signature);
 
         let transactions = query
             .all(&*self.db)

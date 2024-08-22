@@ -38,7 +38,7 @@ futures-util = "0.3.27"
 futures = "0.3.30"
 git2 = "0.19.0"
 hex = "0.4.3"
-hyper = "1.4.1"
+hyper = "0.14.23"
 http = "0.2.8"
 indexer = {path = "indexer"}
 indexmap = "2.3.0"

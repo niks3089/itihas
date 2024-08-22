@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::*;
 
 mod m20240802_114508_init;
 mod m20240805_174804_hypertable;
+mod m20240822_181224_create_indices;
 mod model;
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20240802_114508_init::Migration),
             Box::new(m20240805_174804_hypertable::Migration),
+            Box::new(m20240822_181224_create_indices::Migration),
         ]
     }
 }

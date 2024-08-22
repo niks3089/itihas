@@ -2,7 +2,7 @@ use jsonrpsee::RpcModule;
 use log::debug;
 
 use crate::error::ApiError;
-use crate::spec::{ApiContract, GetTransactionsByAddress};
+use crate::spec::{ApiContract, GetTransactionsByAddress, GetTransactionsByMint};
 
 pub struct RpcApiBuilder;
 
@@ -33,6 +33,19 @@ impl RpcApiBuilder {
                     .map_err(Into::into)
             },
         )?;
+
+        // get_transactions_by_mint
+        module.register_async_method(
+            "get_transactions_by_mint",
+            |rpc_params, rpc_context| async move {
+                let payload = rpc_params.parse::<GetTransactionsByMint>()?;
+                rpc_context
+                    .get_transactions_by_mint(payload)
+                    .await
+                    .map_err(Into::into)
+            },
+        )?;
+
         module.register_async_method("schema", |_, rpc_context| async move {
             Ok(rpc_context.schema())
         })?;

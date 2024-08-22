@@ -15,11 +15,11 @@ impl EntityName for Entity {
 #[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Serialize, Deserialize)]
 pub struct Model {
     pub signature: Vec<u8>,
-    pub src_address: Vec<u8>,
+    pub source_address: Vec<u8>,
     pub token_type: String,
-    pub dest_address: Vec<u8>,
-    pub src_ata: Option<Vec<u8>>,
-    pub dest_ata: Option<Vec<u8>>,
+    pub destination_address: Vec<u8>,
+    pub source_ata: Option<Vec<u8>>,
+    pub destination_ata: Option<Vec<u8>>,
     pub mint_address: Option<Vec<u8>>,
     pub slot: i64,
     pub amount: i64,
@@ -31,11 +31,11 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
 pub enum Column {
     Signature,
-    SrcAddress,
+    SourceAddress,
     TokenType,
-    DestAddress,
-    SrcAta,
-    DestAta,
+    DestinationAddress,
+    SourceAta,
+    DestinationAta,
     MintAddress,
     Slot,
     Amount,
@@ -47,8 +47,8 @@ pub enum Column {
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
 pub enum PrimaryKey {
     Signature,
-    SrcAddress,
-    DestAddress,
+    SourceAddress,
+    DestinationAddress,
     BlockTime,
 }
 
@@ -67,11 +67,11 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Signature => ColumnType::Binary.def(),
-            Self::SrcAddress => ColumnType::Binary.def(),
+            Self::SourceAddress => ColumnType::Binary.def(),
             Self::TokenType => ColumnType::String(None).def(),
-            Self::DestAddress => ColumnType::Binary.def(),
-            Self::SrcAta => ColumnType::Binary.def().null(),
-            Self::DestAta => ColumnType::Binary.def().null(),
+            Self::DestinationAddress => ColumnType::Binary.def(),
+            Self::SourceAta => ColumnType::Binary.def().null(),
+            Self::DestinationAta => ColumnType::Binary.def().null(),
             Self::MintAddress => ColumnType::Binary.def().null(),
             Self::Slot => ColumnType::BigInteger.def(),
             Self::Amount => ColumnType::BigInteger.def(),

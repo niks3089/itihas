@@ -110,7 +110,6 @@ async fn main() -> anyhow::Result<(), ApiError> {
     );
     env_logger::init();
 
-    init_logger();
     let config = setup_config();
 
     let addr = SocketAddr::from(([0, 0, 0, 0], config.server_port));
@@ -119,7 +118,12 @@ async fn main() -> anyhow::Result<(), ApiError> {
         .allow_origin(Any)
         .allow_headers([hyper::header::CONTENT_TYPE]);
 
-    setup_metrics("api", config.metrics_host, config.metrics_port, config.env);
+    setup_metrics(
+        "api",
+        config.metrics_host.clone(),
+        config.metrics_port,
+        config.env.clone(),
+    );
     let middleware = tower::ServiceBuilder::new()
         .layer(cors)
         .layer(ProxyGetRequestLayer::new("/health", "healthz")?);

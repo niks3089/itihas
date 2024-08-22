@@ -6,7 +6,7 @@ use open_rpc_schema::document::OpenrpcDocument;
 use sea_orm::{ConnectionTrait, DbBackend, Statement};
 use solana_sdk::pubkey::Pubkey;
 
-use super::{ApiContract, GetTransactionsByAddress};
+use super::{ApiContract, GetTransactionsByAddress, GetTransactionsByMint};
 
 use async_trait::async_trait;
 
@@ -42,6 +42,7 @@ impl ApiContract for Api {
         let GetTransactionsByAddress {
             source,
             destination,
+            mint,
         } = payload;
 
         let source = validate_pubkey(source)?.to_bytes().to_vec();
@@ -51,10 +52,29 @@ impl ApiContract for Api {
             None
         };
 
+        let mint = if let Some(mint) = mint {
+            Some(validate_pubkey(mint)?.to_bytes().to_vec())
+        } else {
+            None
+        };
+
         let models = self
             .dao
-            .get_transactions_by_address(source, destination)
+            .get_transactions_by_address(source, destination, mint)
             .await?;
+        let transactions: Vec<Transaction> = models.into_iter().map(Transaction::from).collect();
+        Ok(transactions)
+    }
+
+    async fn get_transactions_by_mint(
+        self: &Api,
+        payload: GetTransactionsByMint,
+    ) -> Result<Vec<Transaction>, ApiError> {
+        let GetTransactionsByMint { mint } = payload;
+
+        let mint = validate_pubkey(mint)?.to_bytes().to_vec();
+
+        let models = self.dao.get_transactions_by_mint(mint).await?;
         let transactions: Vec<Transaction> = models.into_iter().map(Transaction::from).collect();
         Ok(transactions)
     }

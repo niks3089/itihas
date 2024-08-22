@@ -15,11 +15,11 @@ pub struct Instruction {
     pub program_id: Pubkey,
     pub data: Vec<u8>,
     pub accounts: Vec<Pubkey>,
-    pub src_address: Vec<u8>,
-    pub dest_address: Vec<u8>,
+    pub source_address: Vec<u8>,
+    pub destination_address: Vec<u8>,
     pub mint: Option<Vec<u8>>,
-    pub src_ata: Option<Vec<u8>>,
-    pub dest_ata: Option<Vec<u8>>,
+    pub source_ata: Option<Vec<u8>>,
+    pub destination_ata: Option<Vec<u8>>,
     pub amount: u64,
 }
 

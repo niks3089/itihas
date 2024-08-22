@@ -248,8 +248,8 @@ pub fn parse_instruction_groups(
         {
             if let Ok(transfer_instruction) = spl_token::instruction::TokenInstruction::unpack(&data) {
                 if let spl_token::instruction::TokenInstruction::Transfer { amount } = transfer_instruction {
-                    let src_address = accounts[0];
-                    let dest_address = accounts[1];//.to_bytes().to_vec();
+                    let source_address = accounts[0];
+                    let destination_address = accounts[1];//.to_bytes().to_vec();
                     //let authority = accounts[2];
 
                     let mint= match &meta.post_token_balances {
@@ -265,8 +265,8 @@ pub fn parse_instruction_groups(
                             return Err(IndexerError::ParserError("Post token balances were skipped".to_string()));
                         },
                     };
-                    let src_ata = find_associated_token_address(src_address, mint, Some(token_program_id))?;
-                    let dest_ata = find_associated_token_address(dest_address, mint, Some(token_program_id))?;
+                    let source_ata = find_associated_token_address(source_address, mint, Some(token_program_id))?;
+                    let destination_ata = find_associated_token_address(destination_address, mint, Some(token_program_id))?;
 
                     let mut inner_instructions = Vec::new();
 
@@ -303,17 +303,17 @@ pub fn parse_instruction_groups(
                                                 spl_token::instruction::TokenInstruction::unpack(&inner_data) 
                                             {
                                                 if let spl_token::instruction::TokenInstruction::Transfer { amount } = inner_transfer_instruction {
-                                                    let inner_src_address = inner_accounts[0].to_bytes().to_vec();
-                                                    let inner_dest_address = inner_accounts[1].to_bytes().to_vec();
+                                                    let inner_source_address = inner_accounts[0].to_bytes().to_vec();
+                                                    let inner_destination_address = inner_accounts[1].to_bytes().to_vec();
                                                     
                                                     inner_instructions.push(Instruction {
                                                         program_id: inner_program_id,
                                                         data: inner_data,
                                                         accounts: inner_accounts,
-                                                        src_address: inner_src_address,
-                                                        dest_address: inner_dest_address,
-                                                        src_ata: None,
-                                                        dest_ata: None,
+                                                        source_address: inner_source_address,
+                                                        destination_address: inner_destination_address,
+                                                        source_ata: None,
+                                                        destination_ata: None,
                                                         mint: None,
                                                         amount,
                                                     });
@@ -336,10 +336,10 @@ pub fn parse_instruction_groups(
                             program_id,
                             data,
                             accounts,
-                            src_address: src_address.to_bytes().to_vec(),
-                            dest_address: dest_address.to_bytes().to_vec(),
-                            src_ata: Some(src_ata.to_bytes().to_vec()),
-                            dest_ata: Some(dest_ata.to_bytes().to_vec()),
+                            source_address: source_address.to_bytes().to_vec(),
+                            destination_address: destination_address.to_bytes().to_vec(),
+                            source_ata: Some(source_ata.to_bytes().to_vec()),
+                            destination_ata: Some(destination_ata.to_bytes().to_vec()),
                             mint: Some(mint.to_bytes().to_vec()),
                             amount,
                         },

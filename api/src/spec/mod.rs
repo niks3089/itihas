@@ -13,6 +13,13 @@ pub use api_impl::*;
 pub struct GetTransactionsByAddress {
     pub source: String,
     pub destination: Option<String>,
+    pub mint: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Default)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct GetTransactionsByMint {
+    pub mint: String,
 }
 
 #[document_rpc]
@@ -24,10 +31,20 @@ pub trait ApiContract: Send + Sync + 'static {
     #[rpc(
         name = "getTransactionsByAddress",
         params = "named",
-        summary = "Get all transactions for a particular source/destination address"
+        summary = "Get all transactions for a source account address"
     )]
     async fn get_transactions_by_address(
         &self,
         payload: GetTransactionsByAddress,
+    ) -> Result<Vec<Transaction>, ApiError>;
+
+    #[rpc(
+        name = "getTransactionsByMint",
+        params = "named",
+        summary = "Get all transactions for a particular mint account address"
+    )]
+    async fn get_transactions_by_mint(
+        &self,
+        payload: GetTransactionsByMint,
     ) -> Result<Vec<Transaction>, ApiError>;
 }

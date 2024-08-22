@@ -284,8 +284,8 @@ impl GrpcStreamer {
             if (program_id == token_program_id || program_id == token_extensions_program_id)
                 && instruction_accounts.len() >= 2
             {
-                let src_address = instruction_accounts[0].to_bytes().to_vec();
-                let dest_address = instruction_accounts[1].to_bytes().to_vec();
+                let source_address = instruction_accounts[0].to_bytes().to_vec();
+                let destination_address = instruction_accounts[1].to_bytes().to_vec();
 
                 if let Ok(spl_token::instruction::TokenInstruction::Transfer { amount }) =
                     spl_token::instruction::TokenInstruction::unpack(&data)
@@ -299,7 +299,7 @@ impl GrpcStreamer {
                             "Token balance not found".to_string(),
                         ))?;
 
-                    let src_ata = Some(
+                    let source_ata = Some(
                         find_associated_token_address(
                             instruction_accounts[0],
                             mint,
@@ -308,7 +308,7 @@ impl GrpcStreamer {
                         .to_bytes()
                         .to_vec(),
                     );
-                    let dest_ata = Some(
+                    let destination_ata = Some(
                         find_associated_token_address(
                             instruction_accounts[1],
                             mint,
@@ -346,10 +346,10 @@ impl GrpcStreamer {
                                 program_id,
                                 data: inner_data,
                                 accounts: inner_accounts,
-                                src_address: src_address.clone(),
-                                dest_address: dest_address.clone(),
-                                src_ata: None,
-                                dest_ata: None,
+                                source_address: source_address.clone(),
+                                destination_address: destination_address.clone(),
+                                source_ata: None,
+                                destination_ata: None,
                                 mint: None,
                                 amount,
                             });
@@ -361,10 +361,10 @@ impl GrpcStreamer {
                             program_id,
                             data,
                             accounts: instruction_accounts,
-                            src_address,
-                            dest_address,
-                            src_ata,
-                            dest_ata,
+                            source_address,
+                            destination_address,
+                            source_ata,
+                            destination_ata,
                             mint: Some(mint.to_bytes().to_vec()),
                             amount,
                         },

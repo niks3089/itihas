@@ -123,6 +123,7 @@ async fn test_get_transaction_by_source() {
     let payload = GetTransactionsByAddress {
         source: "5oTHwHSgkX2kMP88aRyy2Cvi8SqhRv7DJFbacRy9upCm".to_string(),
         destination: None,
+        mint: None,
     };
 
     for (i, _txn_signature) in txns.iter().enumerate() {
@@ -140,6 +141,7 @@ async fn test_get_transaction_by_source() {
     let payload = GetTransactionsByAddress {
         source: "5oTHwHSgkX2kMP88aRyy2Cvi8SqhRv7DJFbacRy9upCm".to_string(),
         destination: Some("HUe9Gfu8DMhY4Dj9A56N9muZg7euoFcXQskVAAfJpgEw".to_string()),
+        mint: None,
     };
 
     for (i, _txn_signature) in txns.iter().enumerate() {
@@ -157,6 +159,7 @@ async fn test_get_transaction_by_source() {
     let payload = GetTransactionsByAddress {
         source: "HUe9Gfu8DMhY4Dj9A56N9muZg7euoFcXQskVAAfJpgEw".to_string(),
         destination: None,
+        mint: None,
     };
 
     for (i, _txn_signature) in txns.iter().enumerate() {

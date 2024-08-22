@@ -28,13 +28,13 @@ pub struct TransactionIdQuery {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Transaction {
     pub signature: String,
-    pub src_address: String,
+    pub source_address: String,
     pub token_type: String,
-    pub dest_address: String,
+    pub destination_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub src_ata: Option<String>,
+    pub source_ata: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub dest_ata: Option<String>,
+    pub destination_ata: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mint_address: Option<String>,
     pub slot: i64,
@@ -48,11 +48,11 @@ impl From<token_transfers::Model> for Transaction {
     fn from(model: token_transfers::Model) -> Self {
         Transaction {
             signature: bs58::encode(model.signature).into_string(),
-            src_address: bs58::encode(model.src_address).into_string(),
+            source_address: bs58::encode(model.source_address).into_string(),
             token_type: model.token_type,
-            dest_address: bs58::encode(model.dest_address).into_string(),
-            src_ata: model.src_ata.map(|ata| bs58::encode(ata).into_string()),
-            dest_ata: model.dest_ata.map(|ata| bs58::encode(ata).into_string()),
+            destination_address: bs58::encode(model.destination_address).into_string(),
+            source_ata: model.source_ata.map(|ata| bs58::encode(ata).into_string()),
+            destination_ata: model.destination_ata.map(|ata| bs58::encode(ata).into_string()),
             mint_address: model
                 .mint_address
                 .map(|mint| bs58::encode(mint).into_string()),

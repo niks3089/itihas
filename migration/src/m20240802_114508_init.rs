@@ -80,7 +80,7 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(TokenTransfers::SrcAddress)
+                        ColumnDef::new(TokenTransfers::SourceAddress)
                             .binary()
                             .not_null(),
                     )
@@ -90,12 +90,12 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(TokenTransfers::DestAddress)
+                        ColumnDef::new(TokenTransfers::DestinationAddress)
                             .binary()
                             .not_null(),
                     )
-                    .col(ColumnDef::new(TokenTransfers::SrcAta).binary())
-                    .col(ColumnDef::new(TokenTransfers::DestAta).binary())
+                    .col(ColumnDef::new(TokenTransfers::SourceAta).binary())
+                    .col(ColumnDef::new(TokenTransfers::DestinationAta).binary())
                     .col(ColumnDef::new(TokenTransfers::MintAddress).binary())
                     .col(
                         ColumnDef::new(TokenTransfers::Slot)
@@ -123,8 +123,8 @@ impl MigrationTrait for Migration {
                         Index::create()
                             .name("pk_token_transfers")
                             .col(TokenTransfers::Signature)
-                            .col(TokenTransfers::SrcAddress)
-                            .col(TokenTransfers::DestAddress)
+                            .col(TokenTransfers::SourceAddress)
+                            .col(TokenTransfers::DestinationAddress)
                             .col(TokenTransfers::BlockTime),
                     )
                     .to_owned(),
