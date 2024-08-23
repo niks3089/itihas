@@ -67,7 +67,7 @@ impl GrpcStreamer {
                         match select(grpc_stream.next(), rpc_poll_stream_value.next()).await {
                             Either::Left((Some(grpc_block), _)) => {
 
-                                if grpc_block.metadata.parent_slot == last_indexed_slot {
+                                if grpc_block.metadata.parent_slot == last_indexed_slot || self.config.index_recent {
                                     last_indexed_slot = grpc_block.metadata.slot;
                                     yield grpc_block;
                                     rpc_poll_stream = None;
@@ -94,7 +94,7 @@ impl GrpcStreamer {
                         if block.metadata.slot == 0 {
                             continue;
                         }
-                        if block.metadata.parent_slot == last_indexed_slot {
+                        if block.metadata.parent_slot == last_indexed_slot || self.config.index_recent {
                             last_indexed_slot = block.metadata.slot;
                             yield block;
                         } else {
@@ -130,7 +130,9 @@ impl GrpcStreamer {
                         self.build_geyser_client(endpoint.clone(), auth_header.clone()).await;
                     if let Err(e) = grpc_client {
                         error!("Error connecting to gRPC, waiting one second then retrying connect: {}", e);
-                        statsd_count!("grpc_connect_error", 1);
+                        metric! {
+                            statsd_count!("grpc_connect_error", 1);
+                        }
 
                         sleep(Duration::from_secs(1)).await;
                         continue;
@@ -284,8 +286,8 @@ impl GrpcStreamer {
             if (program_id == token_program_id || program_id == token_extensions_program_id)
                 && instruction_accounts.len() >= 2
             {
-                let source_address = instruction_accounts[0].to_bytes().to_vec();
-                let destination_address = instruction_accounts[1].to_bytes().to_vec();
+                let source_address = instruction_accounts[0];
+                let destination_address = instruction_accounts[1];
 
                 if let Ok(spl_token::instruction::TokenInstruction::Transfer { amount }) =
                     spl_token::instruction::TokenInstruction::unpack(&data)
@@ -300,22 +302,14 @@ impl GrpcStreamer {
                         ))?;
 
                     let source_ata = Some(
-                        find_associated_token_address(
-                            instruction_accounts[0],
-                            mint,
-                            Some(program_id),
-                        )?
-                        .to_bytes()
-                        .to_vec(),
+                        find_associated_token_address(source_address, mint, Some(program_id))?
+                            .to_bytes()
+                            .to_vec(),
                     );
                     let destination_ata = Some(
-                        find_associated_token_address(
-                            instruction_accounts[1],
-                            mint,
-                            Some(program_id),
-                        )?
-                        .to_bytes()
-                        .to_vec(),
+                        find_associated_token_address(destination_address, mint, Some(program_id))?
+                            .to_bytes()
+                            .to_vec(),
                     );
                     for inner_instruction_group in meta.inner_instructions.iter() {
                         let InnerInstructions {
@@ -346,8 +340,8 @@ impl GrpcStreamer {
                                 program_id,
                                 data: inner_data,
                                 accounts: inner_accounts,
-                                source_address: source_address.clone(),
-                                destination_address: destination_address.clone(),
+                                source_address: source_address.to_bytes().to_vec(),
+                                destination_address: destination_address.to_bytes().to_vec(),
                                 source_ata: None,
                                 destination_ata: None,
                                 mint: None,
@@ -361,8 +355,8 @@ impl GrpcStreamer {
                             program_id,
                             data,
                             accounts: instruction_accounts,
-                            source_address,
-                            destination_address,
+                            source_address: source_address.to_bytes().to_vec(),
+                            destination_address: destination_address.to_bytes().to_vec(),
                             source_ata,
                             destination_ata,
                             mint: Some(mint.to_bytes().to_vec()),

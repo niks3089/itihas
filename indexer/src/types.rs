@@ -60,6 +60,7 @@ pub struct BlockStreamConfig {
     pub grpc_url: Option<String>,
     pub max_concurrent_block_fetches: usize,
     pub last_indexed_slot: u64,
+    pub index_recent: bool,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]

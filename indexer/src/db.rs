@@ -1,10 +1,12 @@
 use std::{sync::Arc, thread::sleep, time::Duration};
 
+use cadence_macros::statsd_count;
+use common::metric;
 use sea_orm::{sea_query::Expr, DatabaseConnection, FromQueryResult, TransactionTrait};
 
 use chrono::{DateTime, NaiveDateTime, Utc};
 use dao::generated::{blocks, token_transfers};
-use log::debug;
+use log::{debug, error};
 use sea_orm::{
     sea_query::OnConflict, ConnectionTrait, DatabaseTransaction, EntityTrait, QuerySelect,
     QueryTrait, Set,
@@ -53,12 +55,11 @@ impl Dao {
                 Err(e) => {
                     let start_block = block_batch.first().unwrap().metadata.slot;
                     let end_block = block_batch.last().unwrap().metadata.slot;
-                    log::error!(
+                    error!(
                         "Failed to index block batch {}-{}. Got error {}",
-                        start_block,
-                        end_block,
-                        e
+                        start_block, end_block, e
                     );
+                    statsd_count!("block_index_error", 1);
                     sleep(Duration::from_secs(1));
                 }
             }
@@ -94,7 +95,7 @@ impl Dao {
 
     pub async fn index_block_metadatas_without_commit(
         &self,
-        tx: &DatabaseTransaction,
+        txn: &DatabaseTransaction,
         blocks: Vec<&BlockMetadata>,
     ) -> Result<(), IndexerError> {
         for block_chunk in blocks.chunks(MAX_SQL_INSERTS) {
@@ -116,8 +117,11 @@ impl Dao {
                         .do_nothing()
                         .to_owned(),
                 )
-                .build(tx.get_database_backend());
-            tx.execute(query).await?;
+                .build(txn.get_database_backend());
+            if let Err(e) = txn.execute(query).await {
+                error!("Failed to execute block insert: {:?}", e);
+                return Err(IndexerError::from(e));
+            }
         }
 
         Ok(())
@@ -154,7 +158,7 @@ impl Dao {
                         token_transfers::ActiveModel {
                             signature: Set(Into::<[u8; 64]>::into(transaction.signature).to_vec()),
                             slot: Set(transaction.slot as i64),
-                            error: Set(transaction.error.clone()),
+                            error: Set(transaction.error.as_ref().map(|e| e.replace('\0', ""))),
                             block_time: Set(datetime_utc.into()),
                             created_at: Set(chrono::Utc::now().naive_utc()),
                             source_address: Set(instruction_group
@@ -196,7 +200,11 @@ impl Dao {
                     .to_owned(),
                 )
                 .build(txn.get_database_backend());
-            txn.execute(query).await?;
+
+            if let Err(e) = txn.execute(query).await {
+                error!("Failed to execute transactions insert: {:?}", e);
+                return Err(IndexerError::from(e));
+            }
         }
         Ok(())
     }
@@ -217,7 +225,10 @@ impl Dao {
                         .slot
                 }
                 Err(e) => {
-                    log::error!("Failed to fetch current slot from database: {}", e);
+                    error!("Failed to fetch current slot from database: {}", e);
+                    metric! {
+                        statsd_count!("db_get_slot_error", 1);
+                    }
                     sleep(Duration::from_secs(5));
                 }
             }

@@ -16,6 +16,7 @@ pub struct IndexerConfig {
     pub start_slot: u64,
     #[serde(default = "default_workers")]
     pub workers: u16,
+    pub index_recent: Option<bool>,
 }
 
 fn default_workers() -> u16 {

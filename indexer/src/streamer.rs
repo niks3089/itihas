@@ -1,7 +1,9 @@
 use std::{pin::Pin, sync::Arc, thread::sleep, time::Duration};
 
+use cadence_macros::statsd_count;
+use common::metric;
 use futures::{pin_mut, Stream};
-use log::info;
+use log::{error, info};
 use solana_client::{nonblocking::rpc_client::RpcClient, rpc_config::RpcBlockConfig};
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_transaction_status::{TransactionDetails, UiTransactionEncoding};
@@ -21,7 +23,10 @@ pub async fn get_genesis_hash(rpc_client: &RpcClient) -> String {
         match rpc_client.get_genesis_hash().await {
             Ok(genesis_hash) => return genesis_hash.to_string(),
             Err(e) => {
-                log::error!("Failed to fetch genesis hash: {}", e);
+                error!("Failed to fetch genesis hash: {}", e);
+                metric! {
+                    statsd_count!("get_genesis_hash_error", 1);
+                }
                 sleep(Duration::from_secs(5));
             }
         }
@@ -50,7 +55,7 @@ pub async fn fetch_current_slot(client: &RpcClient) -> u64 {
         match client.get_slot().await {
             Ok(slot) => return slot,
             Err(e) => {
-                log::error!("Failed to fetch current slot: {}", e);
+                error!("Failed to fetch current slot: {}", e);
                 sleep(Duration::from_secs(5));
             }
         }

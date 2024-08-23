@@ -1,5 +1,7 @@
 use std::{sync::Arc, thread::sleep, time::Duration};
 
+use cadence_macros::statsd_count;
+use common::metric;
 use futures::future::join_all;
 use tokio::sync::{
     mpsc::{self},
@@ -77,12 +79,13 @@ impl Messenger {
                 Err(e) => {
                     let start_block = block_batch.first().unwrap().metadata.slot;
                     let end_block = block_batch.last().unwrap().metadata.slot;
-                    log::error!(
+                    error!(
                         "Failed to send block batch {}-{}. Got error {}",
-                        start_block,
-                        end_block,
-                        e
+                        start_block, end_block, e
                     );
+                    metric! {
+                        statsd_count!("messenger_send_error", 1);
+                    }
                     sleep(Duration::from_secs(1));
                 }
             }
@@ -154,10 +157,16 @@ impl Messenger {
                             let block_refs: Vec<&BlockMetadata> = blocks.iter().collect();
                             if let Err(e) = dao.index_block_metadatas(block_refs).await {
                                 error!("Failed to index block metadata: {:?}", e);
+                                metric! {
+                                    statsd_count!("index_block_error", 1);
+                                }
                             }
                         },
                         None => {
                             error!("Block receiver closed");
+                            metric! {
+                                statsd_count!("block_receiver_closed", 1);
+                            }
                             break;
                         }
                     }
@@ -182,13 +191,19 @@ impl Messenger {
                         rx_lock.recv().await
                     } => {
                     match transactions {
-                        Some(transaction) => {
-                            if let Err(e) = dao.index_transaction(&transaction).await {
+                        Some(transactions) => {
+                            if let Err(e) = dao.index_transaction(&transactions).await {
                                 error!("Failed to index transaction: {:?}", e);
+                                metric! {
+                                    statsd_count!("index_transaction_error", 1);
+                                }
                             }
                         },
                         None => {
                             error!("Transaction receiver closed");
+                            metric! {
+                                statsd_count!("transaction_receiver_closed", 1);
+                            }
                             break;
                         }
                     }

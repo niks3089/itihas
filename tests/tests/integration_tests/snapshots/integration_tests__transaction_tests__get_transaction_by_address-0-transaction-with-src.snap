@@ -1,0 +1,24 @@
+---
+source: tests/tests/integration_tests/transaction_tests.rs
+assertion_line: 49
+expression: parsed_transaction
+---
+{
+  "total": 1,
+  "limit": 1000,
+  "page": 1,
+  "items": [
+    {
+      "signature": "4gmMdnaUkDUySPtv7W3WdyPAnLtHrE4dfwkcZtGm9QCNxKNNx2RbwgATDyM95bS9V3GMbpKu3pab1XPcKvSgtDmN",
+      "source_address": "5oTHwHSgkX2kMP88aRyy2Cvi8SqhRv7DJFbacRy9upCm",
+      "program_address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "destination_address": "HUe9Gfu8DMhY4Dj9A56N9muZg7euoFcXQskVAAfJpgEw",
+      "source_ata": "2xpg7vncUU7YCexwgKrAeWDSjk4of7T9UigPk6ChBo6s",
+      "destination_ata": "2Wqzw7iES7vtKnZtkJaPXpcaq9Hpz3gDPKnqQipoDEct",
+      "mint_address": "2smrziPxYKYJSECKjnAv4b6P4Qdz8B2SbkPt8F2Y4mH1",
+      "slot": 317418346,
+      "amount": 300000000,
+      "block_time": "2024-08-08T17:53:33Z"
+    }
+  ]
+}

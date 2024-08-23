@@ -22,7 +22,6 @@ use crate::{
 const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: &str =
     "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 
-
 pub fn find_associated_token_address(
     owner: Pubkey,
     mint: Pubkey,
@@ -78,7 +77,7 @@ pub fn parse_ui_confirmed_block(
     let transactions: Result<Vec<_>, _> = transactions
         .unwrap_or(Vec::new())
         .into_iter()
-        .map(|tx| _parse_transaction(tx, slot, block_time))
+        .map(|tx| parse_encoded_transaction(tx, slot, block_time))
         .collect();
 
     let transactions = transactions?
@@ -101,7 +100,7 @@ pub fn parse_ui_confirmed_block(
     })
 }
 
-fn _parse_transaction(
+fn parse_encoded_transaction(
     transaction: EncodedTransactionWithStatusMeta,
     slot: u64,
     block_time: i64,
@@ -225,12 +224,12 @@ pub fn parse_instruction_groups(
 
     for ix in versioned_transaction.message.instructions().iter() {
         let program_id_index = ix.program_id_index as usize;
-        if program_id_index >= accounts.len() {
+        if program_id_index >= accounts.len(){
             return Err(IndexerError::ParserError("Program ID index out of bounds".to_string()));
         }
         let program_id = accounts[program_id_index];
         let data = ix.data.clone();
-        let accounts: Vec<Pubkey> = ix
+        let instruction_accounts: Vec<Pubkey> = ix
             .accounts
             .iter()
             .map(|account_index| {
@@ -242,15 +241,13 @@ pub fn parse_instruction_groups(
             })
             .collect::<Result<Vec<_>, IndexerError>>()?;
 
-        // Check if this is a transfer instruction with src and dest accounts
         if (program_id == token_program_id || program_id == token_extensions_program_id)
-            && accounts.len() >= 2
+            && instruction_accounts.len() >= 2
         {
             if let Ok(transfer_instruction) = spl_token::instruction::TokenInstruction::unpack(&data) {
                 if let spl_token::instruction::TokenInstruction::Transfer { amount } = transfer_instruction {
-                    let source_address = accounts[0];
-                    let destination_address = accounts[1];//.to_bytes().to_vec();
-                    //let authority = accounts[2];
+                    let source_address = instruction_accounts[0];
+                    let destination_address = instruction_accounts[1];
 
                     let mint= match &meta.post_token_balances {
                         OptionSerializer::Some(balances) => {
@@ -335,7 +332,7 @@ pub fn parse_instruction_groups(
                         outer_instruction: Instruction {
                             program_id,
                             data,
-                            accounts,
+                            accounts: accounts.clone(),
                             source_address: source_address.to_bytes().to_vec(),
                             destination_address: destination_address.to_bytes().to_vec(),
                             source_ata: Some(source_ata.to_bytes().to_vec()),

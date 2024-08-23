@@ -58,6 +58,7 @@ pub async fn main() -> Result<(), IndexerError> {
         max_concurrent_block_fetches,
         last_indexed_slot,
         grpc_url: config.grpc_url.clone(),
+        index_recent: config.index_recent.unwrap_or(true),
     };
 
     let streamer: Box<dyn Streamer + Send + Sync + 'static> = if config.grpc_url.is_some() {
