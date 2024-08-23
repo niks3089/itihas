@@ -344,7 +344,6 @@ pub fn parse_instruction_groups(
                             amount,
                         },
                         inner_instructions,
-                        token_type: "spl_token".to_string(),
                     });
                 }
             }

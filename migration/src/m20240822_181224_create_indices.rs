@@ -17,6 +17,17 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("idx_token_transfers_slot")
+                    .table(TokenTransfers::Table)
+                    .col(TokenTransfers::Slot)
+                    .to_owned(),
+            )
+            .await?;
+
         Ok(())
     }
 
@@ -25,6 +36,15 @@ impl MigrationTrait for Migration {
             .drop_index(
                 Index::drop()
                     .name("idx_token_transfers_mint_address")
+                    .table(TokenTransfers::Table)
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .drop_index(
+                Index::drop()
+                    .name("idx_token_transfers_slot")
                     .table(TokenTransfers::Table)
                     .to_owned(),
             )

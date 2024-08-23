@@ -33,11 +33,6 @@ impl Api {
         }
     }
 
-    pub async fn get_transaction_by_id(&self, id: String) -> Result<Transaction, ApiError> {
-        let transaction = self.dao.get_transaction_by_id(id).await?;
-        Ok(transaction.into())
-    }
-
     pub fn create_pagination(&self, page_opt: PageOptions) -> Result<Pagination, ApiError> {
         match (
             page_opt.before.as_ref(),

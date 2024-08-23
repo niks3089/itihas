@@ -85,8 +85,8 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(TokenTransfers::TokenType)
-                            .string()
+                        ColumnDef::new(TokenTransfers::ProgramId)
+                            .binary()
                             .not_null(),
                     )
                     .col(

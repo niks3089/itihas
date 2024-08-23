@@ -369,7 +369,6 @@ impl GrpcStreamer {
                             amount,
                         },
                         inner_instructions,
-                        token_type: "spl_token".to_string(),
                     });
                 }
             }

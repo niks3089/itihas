@@ -172,7 +172,12 @@ impl Dao {
                                 .destination_ata
                                 .clone()),
                             amount: Set(instruction_group.outer_instruction.amount as i64),
-                            token_type: Set(instruction_group.token_type.clone()),
+                            program_id: Set(instruction_group
+                                .outer_instruction
+                                .program_id
+                                .to_bytes()
+                                .to_vec()
+                                .clone()),
                         }
                     })
             })

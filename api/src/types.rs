@@ -29,7 +29,7 @@ pub struct TransactionIdQuery {
 pub struct Transaction {
     pub signature: String,
     pub source_address: String,
-    pub token_type: String,
+    pub program_address: String,
     pub destination_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_ata: Option<String>,
@@ -49,10 +49,11 @@ impl From<token_transfers::Model> for Transaction {
         Transaction {
             signature: bs58::encode(model.signature).into_string(),
             source_address: bs58::encode(model.source_address).into_string(),
-            token_type: model.token_type,
             destination_address: bs58::encode(model.destination_address).into_string(),
             source_ata: model.source_ata.map(|ata| bs58::encode(ata).into_string()),
-            destination_ata: model.destination_ata.map(|ata| bs58::encode(ata).into_string()),
+            destination_ata: model
+                .destination_ata
+                .map(|ata| bs58::encode(ata).into_string()),
             mint_address: model
                 .mint_address
                 .map(|mint| bs58::encode(mint).into_string()),
@@ -60,6 +61,7 @@ impl From<token_transfers::Model> for Transaction {
             amount: model.amount,
             error: model.error,
             block_time: model.block_time.into(),
+            program_address: bs58::encode(model.program_id).into_string(),
         }
     }
 }

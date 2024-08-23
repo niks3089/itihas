@@ -27,7 +27,6 @@ pub struct Instruction {
 pub struct InstructionGroup {
     pub outer_instruction: Instruction,
     pub inner_instructions: Vec<Instruction>,
-    pub token_type: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

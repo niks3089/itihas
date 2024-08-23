@@ -18,7 +18,7 @@ pub enum TokenTransfers {
     SourceAta,
     DestinationAta,
     MintAddress,
-    TokenType,
+    ProgramId,
     Amount,
     Slot,
     Error,

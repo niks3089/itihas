@@ -16,7 +16,7 @@ impl EntityName for Entity {
 pub struct Model {
     pub signature: Vec<u8>,
     pub source_address: Vec<u8>,
-    pub token_type: String,
+    pub program_id: Vec<u8>,
     pub destination_address: Vec<u8>,
     pub source_ata: Option<Vec<u8>>,
     pub destination_ata: Option<Vec<u8>>,
@@ -32,7 +32,7 @@ pub struct Model {
 pub enum Column {
     Signature,
     SourceAddress,
-    TokenType,
+    ProgramId,
     DestinationAddress,
     SourceAta,
     DestinationAta,
@@ -68,7 +68,7 @@ impl ColumnTrait for Column {
         match self {
             Self::Signature => ColumnType::Binary.def(),
             Self::SourceAddress => ColumnType::Binary.def(),
-            Self::TokenType => ColumnType::String(None).def(),
+            Self::ProgramId => ColumnType::Binary.def(),
             Self::DestinationAddress => ColumnType::Binary.def(),
             Self::SourceAta => ColumnType::Binary.def().null(),
             Self::DestinationAta => ColumnType::Binary.def().null(),

@@ -3,7 +3,6 @@ use api::builder::RpcApiBuilder;
 use api::config::setup_config;
 use api::error::ApiError;
 use cadence_macros::statsd_time;
-use common::init_logger;
 use common::metrics::safe_metric;
 use common::metrics::setup_metrics;
 use hyper::Method;
