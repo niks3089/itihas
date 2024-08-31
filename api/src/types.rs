@@ -28,17 +28,17 @@ pub struct TransactionIdQuery {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Transaction {
     pub signature: String,
-    pub source_address: String,
     pub program_address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mint_address: Option<String>,
+    pub source_address: String,
     pub destination_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_ata: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub destination_ata: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mint_address: Option<String>,
-    pub slot: i64,
     pub amount: i64,
+    pub slot: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
     pub block_time: DateTime<Utc>,
