@@ -134,7 +134,7 @@ impl Dao {
 
     pub async fn get_transactions_by_address(
         &self,
-        source: Vec<u8>,
+        source: Option<Vec<u8>>,
         destination: Option<Vec<u8>>,
         mint: Option<Vec<u8>>,
         pagination: &Pagination,
@@ -142,8 +142,11 @@ impl Dao {
         sort_direction: Order,
         sort_by: Option<token_transfers::Column>,
     ) -> Result<Vec<token_transfers::Model>, ApiError> {
-        let mut query = token_transfers::Entity::find()
-            .filter(token_transfers::Column::SourceAddress.eq(source.clone()));
+        let mut query = token_transfers::Entity::find();
+
+        if let Some(source_address) = source {
+            query = query.filter(token_transfers::Column::SourceAddress.eq(source_address));
+        }
 
         if let Some(dest_address) = destination {
             query = query.filter(token_transfers::Column::DestinationAddress.eq(dest_address));

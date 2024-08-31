@@ -11,20 +11,9 @@ mod api_impl;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Default)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct GetTransactionsByAddress {
-    pub source: String,
+    pub source: Option<String>,
     pub destination: Option<String>,
     pub mint: Option<String>,
-    pub limit: Option<u32>,
-    pub page: Option<u32>,
-    pub before: Option<String>,
-    pub after: Option<String>,
-    pub sort_by: Option<TransactionSorting>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Default)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
-pub struct GetTransactionsByMint {
-    pub mint: String,
     pub limit: Option<u32>,
     pub page: Option<u32>,
     pub before: Option<String>,
@@ -55,20 +44,10 @@ pub trait ApiContract: Send + Sync + 'static {
     #[rpc(
         name = "getTransactionsByAddress",
         params = "named",
-        summary = "Get all transactions for a source account address"
+        summary = "Get all transactions for an address"
     )]
     async fn get_transactions_by_address(
         &self,
         payload: GetTransactionsByAddress,
-    ) -> Result<TransactionList, ApiError>;
-
-    #[rpc(
-        name = "getTransactionsByMint",
-        params = "named",
-        summary = "Get all transactions for a particular mint account address"
-    )]
-    async fn get_transactions_by_mint(
-        &self,
-        payload: GetTransactionsByMint,
     ) -> Result<TransactionList, ApiError>;
 }

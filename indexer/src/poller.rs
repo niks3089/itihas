@@ -10,7 +10,7 @@ use solana_transaction_status::{TransactionDetails, UiTransactionEncoding};
 
 use crate::{
     error::IndexerError,
-    parser::parse_ui_confirmed_block,
+    parser::PollerParser,
     streamer::{fetch_current_slot, Streamer},
     types::{BlockInfo, BlockStreamConfig},
 };
@@ -55,7 +55,7 @@ impl PollerStreamer {
                 )
                 .await
             {
-                Ok(block) => match parse_ui_confirmed_block(block, slot) {
+                Ok(block) => match PollerParser::parse_ui_confirmed_block(block, slot) {
                     Ok(block_info) => return Ok(block_info),
                     Err(e) => return Err(e),
                 },

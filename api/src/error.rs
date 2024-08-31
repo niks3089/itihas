@@ -24,6 +24,8 @@ pub enum ApiError {
     TransactionNotFound(String),
     #[error("Invalid date: {0}")]
     InvalidDate(String),
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
 }
 
 impl From<sea_orm::error::DbErr> for ApiError {

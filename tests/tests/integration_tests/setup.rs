@@ -5,7 +5,7 @@ use std::{
 };
 
 use api::{api::Api, config::setup_config};
-use indexer::{db::Dao, parser::parse_ui_confirmed_block, types::BlockInfo};
+use indexer::{db::Dao, parser::PollerParser, types::BlockInfo};
 
 use migration::{Migrator, MigratorTrait};
 use once_cell::sync::Lazy;
@@ -130,14 +130,17 @@ pub async fn cached_fetch_block(setup: &TestSetup, slot: Slot) -> BlockInfo {
     let file_path = dir.join(format!("{}", slot));
 
     let block: UiConfirmedBlock = if file_path.exists() {
-        let txn_string = std::fs::read(file_path).unwrap();
-        serde_json::from_slice(&txn_string).unwrap()
+        // let txn_string = std::fs::read(file_path).unwrap();
+        // serde_json::from_slice(&txn_string).unwrap()
+        let block = fetch_block(&setup.client, slot).await;
+        std::fs::write(file_path, serde_json::to_string(&block).unwrap()).unwrap();
+        block
     } else {
         let block = fetch_block(&setup.client, slot).await;
         std::fs::write(file_path, serde_json::to_string(&block).unwrap()).unwrap();
         block
     };
-    parse_ui_confirmed_block(block, slot).unwrap()
+    PollerParser::parse_ui_confirmed_block(block, slot).unwrap()
 }
 
 pub fn trim_test_name(name: &str) -> String {
