@@ -47,9 +47,9 @@ impl GrpcStreamer {
         let mut last_indexed_slot = self.config.last_indexed_slot;
         let max_concurrent_block_fetches = self.config.max_concurrent_block_fetches;
         let endpoint = self.config.grpc_url.clone().unwrap();
-
+        let auth_header = self.config.grpc_x_token.clone();
         stream! {
-            let grpc_stream = self.get_grpc_block_stream(endpoint, None);
+            let grpc_stream = self.get_grpc_block_stream(endpoint, auth_header);
             pin_mut!(grpc_stream);
             let mut rpc_poll_stream:  Option<Pin<Box<dyn Stream<Item = BlockInfo> + Send>>> = None;
             // Await either the gRPC stream or the RPC block fetching
@@ -110,7 +110,7 @@ impl GrpcStreamer {
     fn get_grpc_block_stream(
         &self,
         endpoint: String,
-        auth_header: Option<String>,
+        auth_header: String,
     ) -> impl Stream<Item = BlockInfo> + '_ {
         stream! {
             loop {
@@ -196,10 +196,10 @@ impl GrpcStreamer {
     async fn build_geyser_client(
         &self,
         endpoint: String,
-        auth_header: Option<String>,
+        auth_header: String,
     ) -> GeyserGrpcBuilderResult<GeyserGrpcClient<impl Interceptor>> {
         GeyserGrpcClient::build_from_shared(endpoint)?
-            .x_token(auth_header)?
+            .x_token(Some(auth_header))?
             .connect_timeout(Duration::from_secs(10))
             .max_decoding_message_size(8388608)
             .timeout(Duration::from_secs(10))

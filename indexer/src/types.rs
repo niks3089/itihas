@@ -58,6 +58,7 @@ pub struct BlockMetadata {
 pub struct BlockStreamConfig {
     pub rpc_client: Arc<RpcClient>,
     pub grpc_url: Option<String>,
+    pub grpc_x_token: String,
     pub max_concurrent_block_fetches: usize,
     pub last_indexed_slot: u64,
     pub index_recent: bool,

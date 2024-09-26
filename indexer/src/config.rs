@@ -17,6 +17,7 @@ pub struct IndexerConfig {
     #[serde(default = "default_workers")]
     pub workers: u16,
     pub index_recent: Option<bool>,
+    pub grpc_x_token: String,
 }
 
 fn default_workers() -> u16 {
