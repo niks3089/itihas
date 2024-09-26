@@ -4,7 +4,7 @@ members = [
   "common",
   "dao",
   "indexer",
-  "migration",
+  "migrator",
   "tests"
 ]
 
@@ -44,7 +44,7 @@ indexer = {path = "indexer"}
 indexmap = "2.3.0"
 itertools = "0.13.0"
 insta = { version = "1.34.0", features = ["json"] }
-migration = { path = "migration" }
+migrator = { path = "migrator" }
 mime_guess = "2.0.4"
 num-derive = "0.4.2"
 num-traits = "0.2.15"

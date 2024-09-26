@@ -19,7 +19,7 @@ futures-util = {workspace = true}
 insta = {workspace = true}
 itertools = {workspace = true}
 log = {workspace = true}
-migration = {workspace = true}
+migrator = {workspace = true}
 indexer = {workspace = true}
 once_cell = {workspace = true}
 rstest = {workspace = true}

@@ -1,4 +1,4 @@
-name: Publish Dockerfile
+name: Publish images to ECR
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
       - main
 
 jobs:
-  build:
+  build-migrator:
     runs-on: ubuntu-latest 
     steps:
       - uses: actions/checkout@v3
+      
       # Count the number of commits on the current branch
       - name: Count commits
         run: echo "COMMIT_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_ENV
@@ -31,7 +32,7 @@ jobs:
         run: |
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
 
-      # Build and push Docker image using matrix for different Dockerfiles
+      # Build and push Docker image for Migrator
       - name: Build and Push Migrator
         run: |
             IMAGE_TAG=${{ github.run_number }}-${{ env.SHORT_SHA }}
@@ -40,6 +41,33 @@ jobs:
             docker push $IMAGE_URI
             echo "$IMAGE_URI"
 
+  build-indexer:
+    runs-on: ubuntu-latest 
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Count the number of commits on the current branch
+      - name: Count commits
+        run: echo "COMMIT_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_ENV
+
+      # Grab the short SHA from Git to use in tagging
+      - name: Grab Github short SHA
+        run: |
+            echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+
+      # Set up AWS CLI with credentials
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.ECR_HELIUS_PROD_AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.ECR_HELIUS_PROD_AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-2
+
+      - name: Login to Amazon Public ECR
+        run: |
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      # Build and push Docker image for Indexer
       - name: Build and Push Indexer
         run: |
             IMAGE_TAG=${{ github.run_number }}-${{ env.SHORT_SHA }}
@@ -48,6 +76,33 @@ jobs:
             docker push $IMAGE_URI
             echo "$IMAGE_URI"
 
+  build-api:
+    runs-on: ubuntu-latest 
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Count the number of commits on the current branch
+      - name: Count commits
+        run: echo "COMMIT_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_ENV
+
+      # Grab the short SHA from Git to use in tagging
+      - name: Grab Github short SHA
+        run: |
+            echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+
+      # Set up AWS CLI with credentials
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.ECR_HELIUS_PROD_AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.ECR_HELIUS_PROD_AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-2
+
+      - name: Login to Amazon Public ECR
+        run: |
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      # Build and push Docker image for API
       - name: Build and Push API
         run: |
             IMAGE_TAG=${{ github.run_number }}-${{ env.SHORT_SHA }}
