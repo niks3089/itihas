@@ -7,10 +7,10 @@ on:
 
 jobs:
   build-migrator:
-    runs-on: ubuntu-latest 
+    runs-on: buildjet-16vcpu-ubuntu-2204
     steps:
       - uses: actions/checkout@v3
-      
+
       # Count the number of commits on the current branch
       - name: Count commits
         run: echo "COMMIT_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_ENV
@@ -42,10 +42,10 @@ jobs:
             echo "$IMAGE_URI"
 
   build-indexer:
-    runs-on: ubuntu-latest 
+    runs-on: buildjet-16vcpu-ubuntu-2204
     steps:
       - uses: actions/checkout@v3
-      
+
       # Count the number of commits on the current branch
       - name: Count commits
         run: echo "COMMIT_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_ENV
@@ -77,10 +77,10 @@ jobs:
             echo "$IMAGE_URI"
 
   build-api:
-    runs-on: ubuntu-latest 
+    runs-on: buildjet-16vcpu-ubuntu-2204
     steps:
       - uses: actions/checkout@v3
-      
+
       # Count the number of commits on the current branch
       - name: Count commits
         run: echo "COMMIT_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_ENV

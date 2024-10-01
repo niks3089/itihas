@@ -7,6 +7,6 @@ COPY . .
 # Build the project
 RUN cargo build --release -p migrator
 
-RUN mv target/release/migrator . 
+RUN mv target/release/migrator itihasa-migrator
 
 RUN rm -rf target

@@ -7,6 +7,6 @@ COPY . .
 # Build the project
 RUN cargo build --release -p indexer
 
-RUN mv target/release/indexer . 
+RUN mv target/release/indexer itihasa-indexer
 
 RUN rm -rf target
