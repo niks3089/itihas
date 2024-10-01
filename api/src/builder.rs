@@ -33,6 +33,7 @@ impl RpcApiBuilder {
                     .map_err(Into::into)
             },
         )?;
+        module.register_alias("getTransactionsByAddress", "get_transactions_by_address")?;
 
         module.register_async_method("schema", |_, rpc_context| async move {
             Ok(rpc_context.schema())
