@@ -125,6 +125,8 @@ async fn main() -> anyhow::Result<(), ApiError> {
     );
     let middleware = tower::ServiceBuilder::new()
         .layer(cors)
+        .layer(ProxyGetRequestLayer::new("/readiness", "readiness")?)
+        .layer(ProxyGetRequestLayer::new("/liveness", "liveness")?)
         .layer(ProxyGetRequestLayer::new("/health", "healthz")?);
 
     let server = ServerBuilder::default()
