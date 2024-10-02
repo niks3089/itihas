@@ -37,7 +37,7 @@ static INIT: Lazy<Mutex<Option<()>>> = Lazy::new(|| Mutex::new(None));
 
 fn setup_logging() {
     let env_filter =
-        env::var("RUST_LOG").unwrap_or("info,sqlx=error,sea_orm_migration=error".to_string());
+        env::var("RUST_LOG").unwrap_or("error,sqlx=error,sea_orm_migration=error".to_string());
     tracing_subscriber::fmt()
         .with_test_writer()
         .with_env_filter(env_filter)

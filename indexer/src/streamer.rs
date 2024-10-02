@@ -3,7 +3,7 @@ use std::{pin::Pin, sync::Arc, thread::sleep, time::Duration};
 use cadence_macros::statsd_count;
 use common::metric;
 use futures::{pin_mut, Stream};
-use log::{error, info};
+use log::{error, info, warn};
 use solana_client::{nonblocking::rpc_client::RpcClient, rpc_config::RpcBlockConfig};
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_transaction_status::{TransactionDetails, UiTransactionEncoding};
@@ -83,7 +83,7 @@ pub async fn continously_index_new_blocks(
         // Temp hack to not backfill or backfill blocks when we restart the indexer
         let mut finished_backfill = false;
         if !finished_backfill {
-            info!(
+            warn!(
                 "Backfilling historical blocks. Current number of blocks to backfill: {}, Current slot: {}",
                 number_of_blocks_to_backfill, current_slot
             );
@@ -105,7 +105,7 @@ pub async fn continously_index_new_blocks(
                     }
                 } else {
                     finished_backfill = true;
-                    info!("Finished backfilling historical blocks!");
+                    warn!("Finished backfilling historical blocks!");
                 }
             } else {
                 for slot in last_indexed_slot..slot_indexed {
