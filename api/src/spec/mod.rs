@@ -11,9 +11,9 @@ mod api_impl;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Default)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct GetTransactionsByAddress {
-    pub source: Option<String>,
-    pub destination: Option<String>,
-    pub mint: Option<String>,
+    pub source_address: Option<String>,
+    pub destination_address: Option<String>,
+    pub mint_address: Option<String>,
     pub limit: Option<u32>,
     pub page: Option<u32>,
     pub before: Option<String>,

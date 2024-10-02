@@ -38,9 +38,9 @@ impl ApiContract for Api {
         payload: GetTransactionsByAddress,
     ) -> Result<TransactionList, ApiError> {
         let GetTransactionsByAddress {
-            source,
-            destination,
-            mint,
+            source_address,
+            destination_address,
+            mint_address,
             before,
             after,
             limit,
@@ -48,25 +48,25 @@ impl ApiContract for Api {
             sort_by,
         } = payload;
 
-        if source.is_none() && destination.is_none() && mint.is_none() {
+        if source_address.is_none() && destination_address.is_none() && mint_address.is_none() {
             return Err(ApiError::InvalidInput(
-                "source, destination or mint must be provided".to_string(),
+                "source_address, destination_address or mint_address must be provided".to_string(),
             ));
         }
 
-        let source = if let Some(source) = source {
+        let source = if let Some(source) = source_address {
             Some(validate_pubkey(source)?.to_bytes().to_vec())
         } else {
             None
         };
 
-        let destination = if let Some(dest) = destination {
+        let destination = if let Some(dest) = destination_address {
             Some(validate_pubkey(dest)?.to_bytes().to_vec())
         } else {
             None
         };
 
-        let mint = if let Some(mint) = mint {
+        let mint = if let Some(mint) = mint_address {
             Some(validate_pubkey(mint)?.to_bytes().to_vec())
         } else {
             None

@@ -7,7 +7,7 @@ use std::{
 use api::{api::Api, config::setup_config};
 use indexer::{db::Dao, parser::PollerParser, types::BlockInfo};
 
-use migration::{Migrator, MigratorTrait};
+use migrator::{Migrator, MigratorTrait};
 use once_cell::sync::Lazy;
 use sea_orm::{DatabaseConnection, SqlxPostgresConnector};
 
