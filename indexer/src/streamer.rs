@@ -77,13 +77,17 @@ pub async fn continously_index_new_blocks(
         pin_mut!(block_stream);
 
         let number_of_blocks_to_backfill = current_slot - last_indexed_slot_at_start;
-        info!(
-            "Backfilling historical blocks. Current number of blocks to backfill: {}, Current slot: {}",
-            number_of_blocks_to_backfill, current_slot
-        );
+
         let mut last_indexed_slot = last_indexed_slot_at_start;
 
-        let mut finished_backfill = true;
+        // Temp hack to not backfill or backfill blocks when we restart the indexer
+        let mut finished_backfill = false;
+        if !finished_backfill {
+            info!(
+                "Backfilling historical blocks. Current number of blocks to backfill: {}, Current slot: {}",
+                number_of_blocks_to_backfill, current_slot
+            );
+        }
 
         loop {
             let block = block_stream.next().await.unwrap();
