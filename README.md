@@ -4,7 +4,7 @@
 
 The project is composed of a single workspace that includes the following packages:
 
-- **api**: REST API 
+- **api**: JSON RPC 
 - **common**: Common package shared among other packages 
 - **dao**: Sea-orm generated types 
 - **migration**: Package to run migrations on the database
@@ -110,12 +110,21 @@ The requirement is to index transactions which, when inserted, are immutable. Gi
 
 ## API
 
-There are 2 APIs currently supported:
-
-`transactions/?id=<signature>`
-`transactions/?day=dd/mm/yyyy`
-
-The API part was rushed and I didn't get time to add more
+There's just 1 API
+```
+{
+  "jsonrpc": "2.0",
+  "id": "0",
+  "method": "getTransactionsByAddress",
+  "params": {
+    "sourceAddress": "string",
+    "destinationAddress": "string",
+    "mintAddress": "string",
+    "after": "string (date in format DD/MM/YYYY)",
+    "before": "string (date in format DD/MM/YYYY)"
+  }
+}
+```
 
 ## Integration Tests 
 
