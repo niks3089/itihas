@@ -1,4 +1,4 @@
-# Transaction Indexer 
+# Itihas: Transaction Indexer 
 
 ## Project Composition 
 
