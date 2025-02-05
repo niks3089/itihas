@@ -1,0 +1,16 @@
+name: Auto Approve When nikhil is Reviewer
+on: pull_request_review_requested
+
+jobs:
+  auto-approve:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Auto approve PR if niks3089 is requested reviewer
+        if: contains(github.event.pull_request.requested_reviewers.*.login, 'niks3089')
+        uses: hmarr/auto-approve-action@v3
+        with:
+          github-token: ${{ secrets.NIKHIL_PAT }}
+          review-message: "LGTM. says nikhil"
