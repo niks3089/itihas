@@ -1,5 +1,7 @@
 name: Auto Approve When nikhil is Reviewer
-on: pull_request_review_requested
+on:
+  pull_request:
+    types: [review_requested]
 
 jobs:
   auto-approve:
@@ -13,4 +15,4 @@ jobs:
         uses: hmarr/auto-approve-action@v3
         with:
           github-token: ${{ secrets.NIKHIL_PAT }}
-          review-message: "LGTM. says nikhil"
+          review-message: "LGTM"
